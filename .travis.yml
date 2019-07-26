@@ -1,10 +1,22 @@
+# language: node_js
+# node_js: node
+# services:
+# - mongodb
+# deploy: nameless-bastion-74536
+#       provider: heroku
+#       api_key: 9a058a08-b347-4855-bb04-40c0946f3088
+#       app: infinite-hollows-28224
+#       on:
+#         repo: splnlss/chronic_data_server
+
+--- 
+api_key: 9a058a08-b347-4855-bb04-40c0946f3088
+app: infinite-hollows-28224
+deploy: nameless-bastion-74536
 language: node_js
 node_js: node
-services:
-- mongodb
-deploy: nameless-bastion-74536
-  provider: heroku
-  api_key: 9a058a08-b347-4855-bb04-40c0946f3088
-  app: infinite-hollows-28224
-  on:
-    repo: splnlss/chronic_data_server
+provider: heroku
+repo: splnlss/chronic_data_server
+services: 
+  - mongodb
+true: ~
