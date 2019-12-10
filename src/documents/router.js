@@ -7,6 +7,21 @@ const bodyParser = require('body-parser')
 const { Document } = require('./model.js')
 const passport = require('passport')
 
+const aws = require('aws-sdk');
+const url = require('url');
+const config = require('../../config');
+
+aws.config.update({
+  secretAccessKey: config.AWS_ACCESS_KEY,
+  accessKeyId: config.AWS_ACCESS_ID,
+  region: 'us-east-2',
+})
+
+const s3 = new aws.S3({
+  endpoint: 'http://localhost:7777/test-bucket',
+  s3BucketEndpoint: true,
+});
+
 const jsonParser = bodyParser.json()
 
 router.use(jsonParser)
@@ -41,6 +56,37 @@ router.get('/', (req, res) => {
       console.error(err)
       res.status(500).json({ error: 'error getting documents' })
     })
+});
+
+router.get('/:id/document', (req, res) => {
+  Document.findById(req.params.id)
+  .then(
+    (document) => {
+      if (typeof document.documentURL !== 'string') {
+        res.json({status: 'error', message: 'No document found.'});
+        return;
+      }
+
+      const urlParsed = url.parse(document.documentURL);
+      const s3Key = urlParsed.pathname.split('/').slice(2).join('/'); // Remove leading bucket name.
+
+      s3.getObject({
+        Bucket: 'test-bucket',
+        Key: s3Key,
+      }, (err, data) => {
+        if (err) {
+          console.error('S3 error occurred:');
+          console.error(err);
+          res.json({status: 'error', message: 'Unable to read data from S3.'});
+        } else {
+          res.status(200);
+          res.setHeader('Content-Type', data.ContentType);
+          res.setHeader('Content-Length', data.ContentLength);
+          res.end(data.Body, 'binary');
+        }
+      })
+    }
+  )
 });
 
 router.get('/:id', (req,res) => {
@@ -107,6 +153,11 @@ router.put('/:id', (req, res) =>{
   })
   singleUpload(req, res, function(err, some) {
     console.log('FILE UPLOADED.')
+    console.log(req.file);
+    if (req.file) {
+      console.log(req.file.location);
+      updated.documentURL = req.file.location;
+    }
     if (err){
       return res.status(422).send({errors: [{title: 'Document File Upload Error', detail: err.message}]})
     }

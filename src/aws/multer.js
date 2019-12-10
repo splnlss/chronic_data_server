@@ -7,16 +7,19 @@ const config = require('../../config');
 aws.config.update({
   secretAccessKey: config.AWS_ACCESS_KEY,
   accessKeyId: config.AWS_ACCESS_ID,
-  region: 'us-east-2'
+  region: 'us-east-2',
 })
 
-const s3 = new aws.S3();
+const s3 = new aws.S3({
+  endpoint: 'http://localhost:7777/test-bucket',
+  s3BucketEndpoint: true,
+});
 console.log(s3.config.update)
 
 const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: 'chronicdata-records',
+    bucket: 'test-bucket',
     acl: 'bucket-owner-full-control',
     contentType: multerS3.AUTO_CONTENT_TYPE,
     metadata: function(req, file, callback){
