@@ -8,6 +8,7 @@ const passport = require('passport');
 const { router: usersRouter } = require('./src/users');
 const { router: awsRouter} = require('./src/aws')
 const { router: documentRouter} = require('./src/documents')
+const { router: vitalsRouter} = require('./src/vitals')
 const { router: authRouter, localStrategy, jwtStrategy, dropboxStrategy } = require('./auth');
 
 mongoose.Promise = global.Promise;
@@ -54,6 +55,7 @@ app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
 app.use('/api/aws/', awsRouter);
 app.use('/api/documents/', documentRouter);
+app.use('/api/vitals/', vitalsRouter);
 
 const jwtAuth = passport.authenticate('jwt', { session: false });
 
