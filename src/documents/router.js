@@ -18,7 +18,7 @@ aws.config.update({
 })
 
 const s3 = new aws.S3({
-  endpoint: 'http://localhost:7777/test-bucket',
+  endpoint: 'https://fierce-plateau-59242.herokuapp.com/test-bucket',
   s3BucketEndpoint: true,
 });
 
@@ -62,17 +62,14 @@ router.get('/:id/document', (req, res) => {
   Document.findById(req.params.id)
   .then(
     (document) => {
-      if (typeof document.documentURL !== 'string') {
-        res.json({status: 'error', message: 'No document found.'});
+      if (typeof document.documentTardigradeId !== 'string') {
+        res.json({status: 'error', message: 'No Tardigrade ID found.'});
         return;
       }
 
-      const urlParsed = url.parse(document.documentURL);
-      const s3Key = urlParsed.pathname.split('/').slice(2).join('/'); // Remove leading bucket name.
-
       s3.getObject({
         Bucket: 'test-bucket',
-        Key: s3Key,
+        Key: document.documentTardigradeId,
       }, (err, data) => {
         if (err) {
           console.error('S3 error occurred:');
@@ -110,6 +107,7 @@ router.post('/', (req, res) => {
     if (err){
       return res.status(422).send({errors: [{title: 'Document File Upload Error', detail: err.message}]})
     }
+
     Document
     .create({
         documentName: req.body.documentName,
@@ -118,6 +116,7 @@ router.post('/', (req, res) => {
         // address: req.body.address,
         // phone: req.body.phone,
         documentURL: req.file.location,
+        documentTardigradeId: req.file.key,
         userName: req.body.username
       })
     .then(document => res.status(201).json(document.serialize()))
@@ -157,6 +156,7 @@ router.put('/:id', (req, res) =>{
     if (req.file) {
       console.log(req.file.location);
       updated.documentURL = req.file.location;
+      updated.documentTardigradeId = req.file.key;
     }
     if (err){
       return res.status(422).send({errors: [{title: 'Document File Upload Error', detail: err.message}]})

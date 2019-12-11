@@ -11,7 +11,7 @@ aws.config.update({
 })
 
 const s3 = new aws.S3({
-  endpoint: 'http://localhost:7777/test-bucket',
+  endpoint: 'https://fierce-plateau-59242.herokuapp.com/test-bucket',
   s3BucketEndpoint: true,
 });
 console.log(s3.config.update)
